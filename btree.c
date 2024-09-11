@@ -114,16 +114,19 @@ void *btreeSearch(const BTree *tree, unsigned int key) {
 // Internal function to search for a key in a node
 static void *searchNode(const BTreeNode *node, unsigned int key) {
   // Search logic to return the associated data for a key
-  for (unsigned int i = 0; i < node->numKeys; i++) {
+  unsigned int i = 0;
+  for (i; i < node->numKeys; i++) {
     if (node->entries[i].key == key) {
       return node->entries[i].data;
     }
   }
+  
   // If not found and it's a leaf, return NULL
   if (node->isLeaf) {
     return NULL;
   }
   // Otherwise, recursively search the appropriate child
+  
   return searchNode(node->children[i],
                     key);  // Adjust child traversal based on key comparison
 }

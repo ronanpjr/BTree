@@ -1,7 +1,7 @@
+#include "btree.h"
+
 #include <stdio.h>
 #include <string.h>  // For memmove if needed
-
-#include "btree.h"
 
 // Internal structure definitions that are private to the implementation file
 
@@ -97,13 +97,75 @@ void btreeInsert(BTree *tree, unsigned int key, void *data) {
 // Internal function to insert into a non-full node
 static void insertNonFull(BTreeNode *node, unsigned int key, void *data,
                           unsigned int order) {
-  // Implementation of inserting into a non-full node (key-data pair)
-  // Adjust logic to handle BTreeEntry for key-data pairs
+  int i = node->numKeys - 1;
+
+  if (node->isLeaf) {
+    // Shift keys/data to the right to make space for new key-data pair
+    while (i >= 0 && node->entries[i].key > key) {
+      node->entries[i + 1] = node->entries[i];
+      i--;
+    }
+
+    // Insert new key-data pair
+    node->entries[i + 1].key = key;
+    node->entries[i + 1].data = data;
+    node->numKeys++;
+
+  } else {
+    // Find the child to insert into
+    while (i >= 0 && node->entries[i].key > key) {
+      i--;
+    }
+    i++;
+
+    // If the child is full, split it
+    if (node->children[i]->numKeys == order - 1) {
+      splitChild(node, i, node->children[i]);
+
+      // After splitting, the middle key of the child moves up, so check again
+      if (node->entries[i].key < key) {
+        i++;
+      }
+    }
+    insertNonFull(node->children[i], key, data, order);
+  }
 }
 
 // Internal function to split a full child node
 static void splitChild(BTreeNode *parent, int i, BTreeNode *child) {
-  // Implementation of splitting a full child node
+  unsigned int order = parent->children[i]->numKeys;
+  BTreeNode *newChild = createNode(order, child->isLeaf);
+  newChild->numKeys = (order - 1) / 2;  // New child will take half the keys
+
+  // Move second half of child's entries to newChild
+  for (unsigned int j = 0; j < newChild->numKeys; j++) {
+    newChild->entries[j] = child->entries[j + (order + 1) / 2];
+  }
+
+  // If not a leaf, move child pointers too
+  if (!child->isLeaf) {
+    for (unsigned int j = 0; j <= newChild->numKeys; j++) {
+      newChild->children[j] = child->children[j + (order + 1) / 2];
+    }
+  }
+
+  // Reduce the number of keys in child
+  child->numKeys = (order - 1) / 2;
+
+  // Make space in parent for the new key
+  for (int j = parent->numKeys; j >= i + 1; j--) {
+    parent->children[j + 1] = parent->children[j];
+  }
+  parent->children[i + 1] = newChild;
+
+  // Move the middle key of the child up to the parent
+  for (int j = parent->numKeys - 1; j >= i; j--) {
+    parent->entries[j + 1] = parent->entries[j];
+  }
+  parent->entries[i] = child->entries[(order - 1) / 2];
+
+  // Update the parent's number of keys
+  parent->numKeys++;
 }
 
 // Function to search for a key in the B-tree and return the associated data
@@ -126,13 +188,14 @@ static void *searchNode(const BTreeNode *node, unsigned int key) {
     return NULL;
   }
   // Otherwise, recursively search the appropriate child
-  
-  return searchNode(node->children[i], key);  // Adjust child traversal based on key comparison
+
+  return searchNode(node->children[i],
+                    key);  // Adjust child traversal based on key comparison
 }
 
 // Other functions for deletion and B* Tree operations...\
 
-/* 
+/*
 // Function to print a single node
 static void printNode(const BTreeNode *node) {
     if (node == NULL) return;

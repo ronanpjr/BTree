@@ -120,15 +120,44 @@ static void *searchNode(const BTreeNode *node, unsigned int key) {
       return node->entries[i].data;
     }
   }
-  
+
   // If not found and it's a leaf, return NULL
   if (node->isLeaf) {
     return NULL;
   }
   // Otherwise, recursively search the appropriate child
   
-  return searchNode(node->children[i],
-                    key);  // Adjust child traversal based on key comparison
+  return searchNode(node->children[i], key);  // Adjust child traversal based on key comparison
 }
 
-// Other functions for deletion and B* Tree operations...
+// Other functions for deletion and B* Tree operations...\
+
+/* 
+// Function to print a single node
+static void printNode(const BTreeNode *node) {
+    if (node == NULL) return;
+
+    // Print the keys in the node
+    printf("[ ");
+    for (unsigned int i = 0; i < node->numKeys; i++) {
+        printf("%u ", node->entries[i].key);
+    }
+    printf("]");
+}
+
+// Recursive function to print the B-tree
+static void printTreeRecursive(const BTreeNode *node, int level) {
+    if (node == NULL) return;
+
+    // Print the current node and its level
+    printf("Level %d ", level);
+    printNode(node);
+    printf("\n");
+
+    // If it's not a leaf, recursively print its children
+    if (!node->isLeaf) {
+        for (unsigned int i = 0; i <= node->numKeys; i++) {
+            printTreeRecursive(node->children[i], level + 1);
+        }
+    }
+} */

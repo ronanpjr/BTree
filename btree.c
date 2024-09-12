@@ -23,7 +23,8 @@ struct BTree {
 // Internal function prototypes (not visible to the user)
 static BTreeNode *createNode(unsigned int order, bool isLeaf);
 static void freeNode(BTreeNode *node);
-static void splitChild(BTreeNode *parent, int i, BTreeNode *child);
+static void splitChild(BTreeNode *parent, int i, BTreeNode *child,
+                       unsigned int order);
 static void insertNonFull(BTreeNode *node, unsigned int key, void *data,
                           unsigned int order);
 static void *searchNode(const BTreeNode *node, unsigned int key);
@@ -88,7 +89,7 @@ void btreeInsert(BTree *tree, unsigned int key, void *data) {
     // Root is full, so split
     BTreeNode *newRoot = createNode(tree->order, false);
     newRoot->children[0] = tree->root;
-    splitChild(newRoot, 0, tree->root);
+    splitChild(newRoot, 0, tree->root, tree->order);
     tree->root = newRoot;
   }
   insertNonFull(tree->root, key, data, tree->order);
@@ -120,7 +121,7 @@ static void insertNonFull(BTreeNode *node, unsigned int key, void *data,
 
     // If the child is full, split it
     if (node->children[i]->numKeys == order - 1) {
-      splitChild(node, i, node->children[i]);
+      splitChild(node, i, node->children[i], order);
 
       // After splitting, the middle key of the child moves up, so check again
       if (node->entries[i].key < key) {
@@ -132,8 +133,9 @@ static void insertNonFull(BTreeNode *node, unsigned int key, void *data,
 }
 
 // Internal function to split a full child node
-static void splitChild(BTreeNode *parent, int i, BTreeNode *child) {
-  unsigned int order = parent->children[i]->numKeys;
+static void splitChild(BTreeNode *parent, int i, BTreeNode *child,
+                       unsigned int order) {
+  // unsigned int order = parent->children[i]->numKeys;
   BTreeNode *newChild = createNode(order, child->isLeaf);
   newChild->numKeys = (order - 1) / 2;  // New child will take half the keys
 
@@ -193,7 +195,7 @@ static void *searchNode(const BTreeNode *node, unsigned int key) {
                     key);  // Adjust child traversal based on key comparison
 }
 
-// Other functions for deletion and B* Tree operations...\
+// Other functions for deletion and B* Tree operations...
 
 /*
 // Function to print a single node

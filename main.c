@@ -1,15 +1,26 @@
-#include "btree.h"
 #include <stdio.h>
 
-void main() {
+#include "btree.h"
 
-    BTree *tree = createBTree(BTREE_DEFAULT, 4);
-    int x;
-    scanf("%d" , &x);
-    void *data  = (void*)&x;
-    btreeInsert(tree, x, data);
+int main() {
+  BTree* tree = createBTree(BTREE_DEFAULT, 4);
+  int n;
+  scanf("%d", &n);
+  int vetor[n];
 
-    void* dadoLido = btreeSearch(tree, x);
-    int* okagrvai = (int*) dadoLido;
-    printf("%d", *okagrvai);
+  for (int i = 0; i < n; i++) {
+    scanf("%d", &vetor[i]);
+    void* data = (void*)&vetor[i];
+    btreeInsert(tree, vetor[i], data);
+  }
+
+  for (int i = 0; i < n; i++) {
+    void* dadoLido = btreeSearch(tree, vetor[i]);
+    int* okagrvai = (int*)dadoLido;
+    printf("%d ", *okagrvai);
+  }
+
+  printf("\n");
+
+  destroyBTree(tree);
 }
